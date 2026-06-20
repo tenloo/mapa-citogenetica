@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Citogenética · Mapa de estudio — Genética I · Unidad II</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eef1f8; --bg2:#f7f9fd; --card:#ffffff; --ink:#2b2f38; --ink2:#444b57; --muted:#5f6672; --line:#e4e8f0;
+    --c-ciclo:#1bb5ac; --c-mitosis:#46bf63; --c-meiosis:#4f9cf0; --c-gameto:#ef6fa3;
+    --c-cromatina:#a274e6; --c-cromosomas:#f2a03e; --c-cariotipo:#27b6d6; --c-alter:#ef6262;
+    --disp:'Baloo 2', system-ui, sans-serif; --sans:'Nunito', system-ui, sans-serif;
+    --shadow:0 2px 4px rgba(40,50,80,.05), 0 14px 30px -16px rgba(40,50,80,.25);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{font-family:var(--sans); color:var(--ink); background:var(--bg); overflow:hidden;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;}
+  button{font-family:inherit}
+  .hidden{display:none !important}
+
+  /* ===== top bar ===== */
+  .bar{position:fixed; top:0; left:0; right:0; height:62px; z-index:40; display:flex; align-items:center; gap:14px; padding:0 20px;
+    background:rgba(247,249,253,.9); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+  .brand{display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none}
+  .brand .seed{width:30px;height:30px;border-radius:10px;background:conic-gradient(from 210deg,#1bb5ac,#4f9cf0,#a274e6,#f2a03e,#ef6262,#46bf63,#1bb5ac); box-shadow:0 3px 10px -2px rgba(79,156,240,.5)}
+  .brand b{font-family:var(--disp); font-weight:700; font-size:18px}
+  .brand span{color:var(--muted); font-size:12.5px; font-weight:600}
+  .bar .back{display:none; align-items:center; gap:6px; border:1.5px solid var(--line); background:var(--card); color:var(--ink2);
+    border-radius:11px; padding:8px 13px; font-size:13.5px; cursor:pointer; transition:.15s; font-weight:700}
+  .bar .back:hover{border-color:var(--c-meiosis); color:var(--c-meiosis); transform:translateX(-2px)}
+  .bar.infocus .back{display:inline-flex}
+  .crumb{font-size:14px; color:var(--muted); display:none; align-items:center; gap:7px; min-width:0; font-weight:600}
+  .bar.infocus .crumb{display:flex}
+  .crumb .sec{font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .spacer{flex:1}
+  .search{display:flex; align-items:center; gap:8px; background:var(--card); border:1.5px solid var(--line); border-radius:13px; padding:0 12px; width:260px; max-width:42vw; transition:.15s; position:relative}
+  .search:focus-within{border-color:var(--c-meiosis); box-shadow:0 0 0 3px rgba(79,156,240,.14)}
+  .search svg{width:16px;height:16px;color:var(--muted);flex:0 0 auto}
+  .search input{border:0; outline:0; background:transparent; padding:10px 0; font-size:14px; width:100%; color:var(--ink); font-weight:600; font-family:var(--sans)}
+  .results{position:absolute; top:48px; left:0; right:0; background:var(--card); border:1.5px solid var(--line); border-radius:14px; box-shadow:var(--shadow); max-height:330px; overflow-y:auto; padding:6px; z-index:50}
+  .results .r{display:flex; align-items:flex-start; gap:10px; padding:9px 10px; border-radius:10px; cursor:pointer}
+  .results .r:hover,.results .r.sel{background:#eef1f8}
+  .results .r .dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex:0 0 auto}
+  .results .r .rt{font-size:13.5px; font-weight:700; line-height:1.25}
+  .results .r .rc{font-size:11.5px; color:var(--muted); font-weight:600}
+  .results .none{padding:14px;color:var(--muted);font-size:13px;text-align:center;font-weight:600}
+
+  /* ===== HOME (mind map) ===== */
+  #home{position:fixed; top:62px; left:0; right:0; bottom:0; overflow:auto; background:
+     radial-gradient(120% 90% at 50% 0%, #fbfcff 0%, var(--bg) 70%);}
+  .homeInner{min-height:100%; display:flex; flex-direction:column; align-items:center; padding:8px 16px 30px}
+  .homeHead{text-align:center; max-width:740px; margin:14px auto 0}
+  .homeHead .eye{font-family:var(--disp); font-weight:700; letter-spacing:.12em; text-transform:uppercase; font-size:12.5px; color:var(--c-meiosis)}
+  .homeHead h1{font-family:var(--disp); font-weight:800; font-size:clamp(26px,4vw,40px); margin:4px 0 0; line-height:1.05}
+  .homeHead p{font-size:15px; color:var(--ink2); margin:9px 0 0; line-height:1.5; font-weight:500}
+  .homeHead .tip{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-size:13px;font-weight:700;color:var(--ink2);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 15px}
+  .mapWrap{width:100%; max-width:1180px; margin-top:4px}
+  #homeSvg{width:100%; height:auto; display:block; overflow:visible}
+  .hnode{cursor:pointer}
+  .hnode rect{transition:transform .15s}
+  .hnode:hover .nodeBox{filter:brightness(1.03)}
+  .hnode:hover .lift{transform:translateY(-3px)}
+  .hbranch{fill:none; stroke-linecap:round; transition:stroke-width .15s}
+
+  /* ===== FOCUS (section branch map) ===== */
+  #focus{position:fixed; top:62px; left:0; right:0; bottom:0; overflow:hidden; display:none; cursor:grab;
+     background:radial-gradient(130% 100% at 0% 0%, #fbfcff 0%, var(--bg) 65%)}
+  #focus.active{display:block}
+  #focus.grabbing{cursor:grabbing}
+  .world{position:absolute; top:0; left:0; transform-origin:0 0}
+  .world svg{position:absolute; top:0; left:0; overflow:visible; pointer-events:none}
+  .ncard{position:absolute; width:226px; background:var(--card); border:2px solid var(--c,#bbb); border-radius:16px; padding:11px 13px;
+     box-shadow:var(--shadow); cursor:pointer; transition:transform .14s, box-shadow .14s}
+  .ncard:hover{transform:translateY(-2px); box-shadow:0 6px 16px -6px rgba(40,50,80,.3)}
+  .ncard.root{width:246px; border-width:3px}
+  .ncard .ic{position:absolute; top:-13px; left:13px; width:26px;height:26px;border-radius:8px; background:var(--c); display:grid;place-items:center; font-size:15px; box-shadow:0 3px 7px -2px rgba(0,0,0,.25)}
+  .ncard .code{font-family:var(--disp);font-weight:700;font-size:11px;color:var(--c)}
+  .ncard h4{font-family:var(--disp); font-weight:700; font-size:15.5px; line-height:1.12; margin:2px 0 0; color:var(--ink)}
+  .ncard.root h4{font-size:18px}
+  .ncard p{font-size:12.5px; color:var(--muted); line-height:1.4; margin:5px 0 0; font-weight:600;
+     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+  .ncard .thumb{width:100%; height:70px; object-fit:cover; border-radius:9px; margin-top:8px; background:#f0f2f7; border:1px solid var(--line)}
+  .ncard .chev{position:absolute; right:-13px; top:50%; transform:translateY(-50%); width:27px;height:27px; border-radius:50%;
+     background:var(--c,#999); color:#fff; border:2.5px solid #fff; display:grid;place-items:center; font-size:14px; cursor:pointer; z-index:3;
+     box-shadow:0 2px 6px -1px rgba(0,0,0,.25); transition:.14s; font-family:var(--disp); font-weight:700}
+  .ncard .chev:hover{transform:translateY(-50%) scale(1.14)}
+  .ncard .chev .cnt{position:absolute; top:-8px; right:-9px; background:var(--ink); color:#fff; font-size:9.5px; font-weight:800; min-width:16px; height:16px; border-radius:8px; display:grid;place-items:center; padding:0 3px}
+  .ncard .pin{position:absolute; top:9px; right:11px; font-size:13px}
+  .ncard.hl{box-shadow:0 0 0 4px color-mix(in srgb, var(--c) 45%, transparent), var(--shadow)}
+  .edge{fill:none; stroke-linecap:round}
+
+  .ftools{position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:30; display:flex; gap:5px;
+     background:rgba(255,255,255,.92); border:1.5px solid var(--line); border-radius:14px; padding:6px; box-shadow:var(--shadow); backdrop-filter:blur(8px)}
+  .ftools button{border:0; background:transparent; color:var(--ink2); border-radius:10px; padding:8px 13px; font-size:13.5px; cursor:pointer; display:inline-flex;align-items:center;gap:6px; transition:.14s; font-weight:700}
+  .ftools button:hover{background:#eef1f8; color:var(--ink)}
+  .ftools .ico{width:36px; justify-content:center; padding:8px; font-size:17px}
+  .ftools .dv{width:1.5px; background:var(--line); margin:3px 2px}
+
+  /* ===== NOTE modal (sticky-note style) ===== */
+  .scrim{position:fixed; inset:0; background:rgba(30,36,52,.4); z-index:55; opacity:0; pointer-events:none; transition:opacity .25s; backdrop-filter:blur(2px)}
+  .scrim.show{opacity:1; pointer-events:auto}
+  .note{position:fixed; z-index:60; top:50%; left:50%; transform:translate(-50%,-48%) scale(.96); opacity:0; pointer-events:none;
+     width:min(560px,94vw); max-height:88vh; display:flex; flex-direction:column; transition:transform .3s cubic-bezier(.2,.9,.3,1.2), opacity .25s;
+     border-radius:26px; overflow:hidden; box-shadow:0 30px 70px -20px rgba(20,28,50,.5); background:color-mix(in srgb, var(--nc,#fff) 10%, #fff)}
+  .note.open{transform:translate(-50%,-50%) scale(1); opacity:1; pointer-events:auto}
+  .note .nhead{padding:22px 26px 14px; position:relative}
+  .note .badge{display:inline-flex; align-items:center; gap:8px; font-family:var(--disp); font-weight:700; font-size:12px; color:#fff;
+     background:var(--nc,#888); border-radius:999px; padding:5px 12px 5px 9px; letter-spacing:.02em}
+  .note .badge .e{font-size:14px}
+  .note h2{font-family:var(--disp); font-weight:800; font-size:27px; line-height:1.08; margin:12px 0 0; color:var(--ink); padding-right:34px}
+  .note .nclose{position:absolute; top:18px; right:18px; width:34px;height:34px;border-radius:50%; border:0; background:rgba(255,255,255,.7); cursor:pointer; display:grid;place-items:center; color:var(--ink2); transition:.16s}
+  .note .nclose:hover{background:#fff; transform:rotate(90deg)}
+  .note .nbody{padding:4px 26px 26px; overflow-y:auto}
+  .note figure{margin:6px 0 0; border-radius:16px; overflow:hidden; background:#fff; border:1px solid rgba(0,0,0,.06)}
+  .note figure img{width:100%; max-height:300px; object-fit:contain; display:block; background:#fbfcfe}
+  .note figure figcaption{font-size:12px; color:var(--ink2); font-weight:700; padding:8px 12px; background:#fff; text-align:center}
+  .note .txt{font-size:16.5px; line-height:1.62; color:var(--ink2); margin:16px 0 0; font-weight:500; white-space:pre-line}
+  .note .clin{margin-top:16px; background:#fff; border-radius:16px; padding:14px 16px; border:1.5px solid color-mix(in srgb, var(--nc) 30%, #fff)}
+  .note .clin .ch{font-family:var(--disp); font-weight:800; font-size:12px; letter-spacing:.03em; color:var(--nc); margin-bottom:7px; display:flex; align-items:center; gap:7px; text-transform:uppercase}
+  .note .clin p{margin:0; font-size:14.5px; line-height:1.55; color:var(--ink); white-space:pre-line; font-weight:600}
+  .note .rel{margin-top:18px; display:flex; flex-wrap:wrap; gap:8px}
+  .note .rel .rl{flex-basis:100%; font-family:var(--disp); font-weight:800; font-size:11px; letter-spacing:.04em; color:var(--ink2); text-transform:uppercase; opacity:.8; margin-bottom:-2px}
+  .note .rel button{border:1.5px solid color-mix(in srgb, var(--nc) 35%, #fff); background:#fff; border-radius:11px; padding:7px 12px; font-size:13px; cursor:pointer; color:var(--ink2); transition:.15s; font-weight:700; text-align:left}
+  .note .rel button:hover{transform:translateY(-1px); border-color:var(--nc)}
+  .note .rel button .a{display:block; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; font-weight:800}
+
+  @media(max-width:620px){ .search{width:140px} .brand span{display:none} .ftools .lbl{display:none} .note h2{font-size:23px} .note .nclose{width:42px;height:42px} }
+</style>
+</head>
+<body>
+  <div class="bar" id="bar">
+    <div class="brand" id="brand"><div class="seed"></div><div><b>Citogenética</b> <span>· Unidad II</span></div></div>
+    <button class="back" id="back">← Inicio</button>
+    <div class="crumb" id="crumb"></div>
+    <div class="spacer"></div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.2-4.2"/></svg>
+      <input id="search" type="text" placeholder="Buscar concepto…" autocomplete="off" spellcheck="false">
+      <div class="results hidden" id="results"></div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div id="home">
+    <div class="homeInner">
+      <div class="homeHead">
+        <div class="eye">Genética I · Unidad II</div>
+        <h1>Mapa de estudio de Citogenética</h1>
+        <p>Toca una de las <b>8 áreas</b> para abrir su mapa. Cada concepto se abre como una nota con texto amplio, imágenes y datos clínicos.</p>
+        <div class="tip">👆 <span>Toca un área para empezar</span></div>
+      </div>
+      <div class="mapWrap"><svg id="homeSvg" viewBox="0 0 1240 740" preserveAspectRatio="xMidYMid meet"></svg></div>
+    </div>
+  </div>
+
+  <!-- FOCUS -->
+  <div id="focus"><div class="world" id="world"><svg id="edges"></svg><div id="cards"></div></div></div>
+  <div class="ftools hidden" id="ftools">
+    <button id="expandAll"><span class="lbl">Expandir todo</span></button>
+    <button id="collapseAll"><span class="lbl">Colapsar</span></button>
+    <div class="dv"></div>
+    <button class="ico" id="zoomOut" title="Alejar">−</button>
+    <button id="fit" title="Centrar / ver todo">⤢<span class="lbl"> Centrar</span></button>
+    <button class="ico" id="zoomIn" title="Acercar">+</button>
+  </div>
+
+  <!-- NOTE -->
+  <div class="scrim" id="scrim"></div>
+  <div class="note" id="note">
+    <div class="nhead">
+      <button class="nclose" id="nclose"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+      <span class="badge" id="nbadge"></span>
+      <h2 id="ntitle"></h2>
+    </div>
+    <div class="nbody">
+      <figure id="nfig" class="hidden"><img id="nimg" alt=""><figcaption id="ncap"></figcaption></figure>
+      <div class="txt" id="ntxt"></div>
+      <div class="clin hidden" id="nclin"><div class="ch" id="nclinh">⚕ Datos clínicos</div><p id="nclinp"></p></div>
+      <div class="rel hidden" id="nrel"></div>
+    </div>
+  </div>
+
+<script>
+/*__DATA_START__*/
+const TEMAS = [
+ { id:'tema1', n:'Tema 1', code:'2.1', title:'Ciclo celular, mitosis y meiosis',
+   sub:'Cómo la célula crece, se divide y forma los gametos.',
+   sections:[
+    { id:'ciclo', code:'2.1.1', t:'Ciclo celular', color:'--c-ciclo', icon:'🔄',
+      d:'Proceso ordenado en el que una célula crece y se divide para crear una copia de sí misma; va del inicio de una división al inicio de la siguiente.',
+      children:[
+        { id:'interfase', code:'2.1.1.a', t:'Interfase', d:'Etapa de crecimiento y duplicación antes de dividirse. Comprende G1, S y G2.', children:[
+          { id:'g1', t:'Fase G1 (Gap 1)', d:'La célula crece, duplica su tamaño y sus organelos, sintetiza proteínas y cumple sus funciones. Punto de control G1/S; si está dañada va a apoptosis.' },
+          { id:'fs', t:'Fase S (Síntesis)', d:'Se duplica el ADN por replicación; también se duplican los centrosomas que participarán en la división.' },
+          { id:'g2', t:'Fase G2 (Gap 2)', d:'La célula se prepara para la fase M. Existe otro punto de control, G2/M.' },
+        ]},
+        { id:'reg', code:'2.1.1.b', t:'Regulación del ciclo', d:'Mecanismos que vigilan y controlan el avance del ciclo en los puntos de control.', children:[
+          { id:'control', t:'Puntos de control', d:'Revisiones G1/S y G2/M que detienen el ciclo si hay daño en el ADN o errores antes de avanzar.' },
+          { id:'apop', t:'Apoptosis', d:'Muerte celular programada; elimina células dañadas para no propagar errores.' },
+          { id:'p53', t:'Proteína p53', d:'«Guardián del genoma». Detecta daño en el ADN, detiene el ciclo y permite la reparación; si el daño es muy grave, induce apoptosis.' },
+          { id:'rb', t:'Proteína Rb', d:'Proteína del retinoblastoma; supresora de tumores. Inhibe la progresión del ciclo antes de entrar en mitosis. Está alterada en muchos cánceres.' },
+          { id:'p21', t:'Proteína p21', d:'Codificada por CDKN1A (inhibidor de quinasa dependiente de ciclina). Regula el avance de la fase S; su expresión es regulada por p53.' },
+        ]},
+      ]},
+    { id:'mitosis', code:'2.1.2', t:'Mitosis', color:'--c-mitosis', icon:'🧫',
+      d:'Fase del ciclo en que la célula se divide y produce dos células con el mismo ADN que la original. Reproduce las células somáticas y a los eucariotas unicelulares.',
+      children:[
+        { id:'mreq', t:'Requisitos de la mitosis', d:'El ADN se condensa en cromosomas (una copia para cada célula), se forman estructuras accesorias y se libera espacio al desintegrarse la membrana nuclear.', children:[
+          { id:'huso', t:'Huso mitótico', d:'Estructura de microtúbulos que captura y reparte los cromosomas.' },
+          { id:'centro', t:'Centrosomas', d:'Se ubican en polos opuestos y organizan el huso mitótico.' },
+          { id:'cineto', t:'Cinetocoro', d:'Estructura sobre el centrómero a la que se adhieren los microtúbulos del huso.' },
+        ]},
+        { id:'profase', t:'Profase', d:'Condensación de los cromosomas, inicio del huso mitótico, centrosomas en polos opuestos y ruptura de la membrana nuclear.' },
+        { id:'prometa', t:'Prometafase', d:'Los cromosomas se acortan y engrosan; se desarrolla el huso y los microtúbulos se adhieren al centrómero.' },
+        { id:'metafase', t:'Metafase', d:'Cromosomas alineados al centro. Cada cromosoma replicado (dos cromátidas hermanas) se une por su centrómero a un microtúbulo de cada polo.' },
+        { id:'anafase', t:'Anafase', d:'Las cromátidas hermanas se separan y se mueven a polos opuestos; los microtúbulos del huso se acortan.' },
+        { id:'telofase', t:'Telofase', d:'Los cromosomas alcanzan los polos y se forma de nuevo el núcleo y las demás estructuras membranales.' },
+        { id:'mimport', t:'Importancia biológica', d:'Produce dos células idénticas (2n); permite el crecimiento, la reparación de tejidos y la reproducción asexual. Conserva la información genética.' },
+      ]},
+    { id:'meiosis', code:'2.1.3', t:'Meiosis', color:'--c-meiosis', icon:'🔀',
+      d:'División celular reduccional con dos divisiones sucesivas. Produce cuatro células hijas haploides; es la clave de las células germinales y de la reproducción sexual.',
+      children:[
+        { id:'meiosisI', code:'2.1.3.a', t:'Meiosis I', d:'División reduccional: los cromosomas homólogos se emparejan y se separan. Las células resultantes ya son haploides.', children:[
+          { id:'profaseI', t:'Profase I', d:'Fase larga con cinco subetapas; ocurre el apareamiento de los homólogos y la recombinación.', children:[
+            { id:'lepto', t:'Leptoteno', d:'El ADN comienza a condensarse.' },
+            { id:'zigo', t:'Zigoteno', d:'Las secuencias homólogas se reconocen; comienza la sinapsis (bivalentes) y se forma el complejo sinaptonémico.' },
+            { id:'paqui', t:'Paquiteno', d:'Mayor condensación. Inicia la recombinación; se observan las tétradas y ocurre el entrecruzamiento → variabilidad genética.' },
+            { id:'diplo', t:'Diploteno', d:'Desaparece el complejo sinaptonémico; los homólogos se separan pero siguen unidos en los quiasmas (puntos de recombinación). En los ovocitos la célula se arresta aquí.' },
+            { id:'diaci', t:'Diacinesis', d:'Final de la profase I; cromosomas completamente condensados unidos por los quiasmas. Transición a la metafase.' },
+          ]},
+          { id:'crossing', t:'Entrecruzamiento (crossing over)', d:'Intercambio de genes entre cromosomas homólogos apareados. Genera diversidad genética: material para la selección natural y la evolución de las especies.' },
+          { id:'metaI', t:'Metafase I', d:'Los cromosomas bivalentes se alinean en el huso.' },
+          { id:'anaI', t:'Anafase I', d:'Se separan los cromosomas homólogos (desde los quiasmas); las cromátidas hermanas permanecen unidas por sus centrómeros.' },
+          { id:'reduc', t:'División reduccional', d:'Al completarse la meiosis I cada célula hija tiene un miembro de cada par homólogo (con dos cromátidas). Ya son haploides.' },
+        ]},
+        { id:'meiosisII', code:'2.1.3.b', t:'Meiosis II', d:'Inicia tras la citocinesis, antes de que los cromosomas se descondensen. Es similar a una mitosis.', children:[
+          { id:'metaII', t:'Metafase II', d:'Los cromosomas se alinean en el huso; los microtúbulos se unen al cinetocoro de las cromátidas hermanas.' },
+          { id:'anaII', t:'Anafase II', d:'Las cromátidas hermanas se segregan a polos opuestos.' },
+          { id:'cuatro', t:'Cuatro células haploides', d:'La citocinesis II produce cuatro células haploides; cada una contiene una sola copia de cada cromosoma.' },
+        ]},
+        { id:'compara', t:'Mitosis vs Meiosis', d:'Comparación de las dos divisiones celulares.',
+          c:'MITOSIS\n• 1 división · 2 células hijas\n• Células 2n idénticas a la madre\n• Función: crecimiento y reparación (células somáticas)\n\nMEIOSIS\n• 2 divisiones · 4 células hijas\n• Células n (haploides) distintas entre sí\n• Función: formar gametos, con variabilidad genética' },
+      ]},
+    { id:'gameto', code:'2.1.4', t:'Gametogénesis', color:'--c-gameto', icon:'🥚',
+      d:'Formación de los gametos a partir de la meiosis. La fusión de los gametos en la fecundación inicia un nuevo organismo diploide.',
+      children:[
+        { id:'esperma', t:'Espermatogénesis', d:'Formación de espermatozoides; de un espermatocito resultan cuatro gametos funcionales.' },
+        { id:'ovo', t:'Ovogénesis', d:'Formación del óvulo. La división es asimétrica: se produce un ovocito de tamaño normal y pequeños cuerpos polares que degeneran.', children:[
+          { id:'regovo', t:'Regulación en los ovocitos', d:'La meiosis del ovocito se regula en dos puntos del ciclo celular.', children:[
+            { id:'arrestoI', t:'Arresto en diploteno', d:'Primer arresto, en el diploteno de la meiosis I. Los ovocitos permanecen detenidos mucho tiempo (40–50 años en mujeres) y se reinician por estímulo hormonal hasta la ovulación.' },
+            { id:'arrestoII', t:'Arresto en metafase II', d:'Tras la división asimétrica (ovocito + 1er cuerpo polar), el ovocito se detiene en metafase II. La meiosis II solo culmina si ocurre la fecundación; entonces se libera el 2.º cuerpo polar.' },
+          ]},
+        ]},
+        { id:'fecund', t:'Fecundación', d:'Con la fecundación inicia el desarrollo de un nuevo organismo diploide, con información genética de ambos progenitores; comienzan los ciclos celulares mitóticos.' },
+      ]},
+   ]},
+ { id:'tema2', n:'Tema 2', code:'2.2', title:'Teoría cromosómica',
+   sub:'Cómo se organiza el ADN en cromosomas y qué pasa cuando se alteran.',
+   sections:[
+    { id:'cromatina', code:'2.2.1', t:'Cromatina', color:'--c-cromatina', icon:'🧬',
+      d:'ADN compactado. Se divide en eucromatina y heterocromatina según su capacidad de teñirse con determinados colorantes.',
+      children:[
+        { id:'eu', t:'Eucromatina', d:'«Cromatina verdadera». Se tiñe débilmente; en ella se encuentran la mayoría de los genes activos o funcionales.' },
+        { id:'hetero', t:'Heterocromatina', d:'Se tiñe más fuertemente. Se divide en dos clases: constitutiva y facultativa.', children:[
+          { id:'hconst', t:'Constitutiva', d:'Cromatina que nunca se activa; se ubica principalmente en las zonas cercanas al centrómero.' },
+          { id:'hfac', t:'Facultativa', d:'En un momento dado expresa información y luego se inactiva; ejemplo: el cromosoma X de la hembra (Cuerpo de Barr).' },
+        ]},
+        { id:'barr', t:'Cuerpo de Barr', d:'Uno de los cromosomas X de la hembra se condensa e inactiva sus genes, formando el corpúsculo de Barr.' },
+        { id:'inactx', t:'Inactivación del cromosoma X', d:'Proceso regulado en hembras de mamíferos durante la embriogénesis (día 16, blastocisto). Mantiene el equilibrio génico entre ambos sexos.', children:[
+          { id:'xist', t:'Gen XIST', d:'Gen dentro de la región XIC (X inactivation center, Xq13.2). Codifica un ARN de 17 kb poliadenilado que no se traduce y recubre el X que será inactivado.' },
+          { id:'lyon', t:'Hipótesis de Lyon', d:'La inactivación al azar de uno de los X se mantiene durante toda la vida; ~15 % de los genes del X inactivo siguen activos (incluido XIST).' },
+          { id:'nbarr', t:'Nº de cuerpos de Barr', d:'Número de corpúsculos de Barr = (número de cromosomas X) − 1.',
+            c:'46,XY  → 0  · Varón normal\n47,XYY → 0  · S. «Súper Macho»\n45,X   → 0  · S. de Turner\n46,XX  → 1  · Mujer normal\n47,XXY → 1  · S. de Klinefelter\n47,XXX → 2  · S. «Súper Hembra»\n48,XXXY→ 2  · Variante de Klinefelter' },
+        ]},
+      ]},
+    { id:'cromosomas', code:'2.2.2', t:'Cromosomas', color:'--c-cromosomas', icon:'📏',
+      d:'Cada especie tiene un número específico de cromosomas. En los humanos: 23 pares = 46 cromosomas.',
+      children:[
+        { id:'autogono', t:'Autosomas y gonosomas', d:'Autosómicos: los pares 1 a 22. Gonosómicos (sexuales): X e Y.' },
+        { id:'ndip', t:'Haploide (n) y diploide (2n)', d:'Gameto haploide n = 23 cromosomas. Célula somática diploide 2n = 46 cromosomas.' },
+        { id:'partes', t:'Partes del cromosoma', d:'Las regiones que forman un cromosoma.', children:[
+          { id:'centrom', t:'Centrómero', d:'Constricción que une las cromátidas hermanas; sobre él se forma el cinetocoro.' },
+          { id:'cromatid', t:'Cromátidas hermanas', d:'Las dos copias idénticas del cromosoma replicado, unidas por el centrómero.' },
+          { id:'brazos', t:'Brazos y telómeros', d:'Brazo corto (p) y brazo largo (q); los telómeros protegen los extremos del cromosoma.' },
+        ]},
+        { id:'tipos', t:'Tipos según el centrómero', d:'Clasificación de los cromosomas por la posición del centrómero.', children:[
+          { id:'meta', t:'Metacéntrico', d:'Centrómero central; los brazos son de igual longitud.' },
+          { id:'submeta', t:'Submetacéntrico', d:'Centrómero algo desplazado; los brazos son desiguales.' },
+          { id:'acro', t:'Acrocéntrico', d:'Centrómero cerca de un extremo; el brazo corto es muy pequeño.' },
+          { id:'teloc', t:'Telocéntrico', d:'Centrómero en el extremo (no aparece en el cariotipo humano normal).' },
+        ]},
+      ]},
+    { id:'cariotipo', code:'2.2.3', t:'Cariotipo', color:'--c-cariotipo', icon:'🔬',
+      d:'Ordenamiento de los cromosomas según su tamaño y tipo, del más grande al más pequeño, en grupos nombrados por letras. Se obtiene de células en metafase.',
+      children:[
+        { id:'grupos', t:'Grupos del cariotipo (A–G)', d:'Clasificación de los 23 pares por tamaño y posición del centrómero.', children:[
+          { id:'gA', t:'Grupo A (1–3)', d:'Metacéntricos grandes (el cromosoma 2 es submetacéntrico grande).' },
+          { id:'gB', t:'Grupo B (4–5)', d:'Submetacéntricos grandes.' },
+          { id:'gC', t:'Grupo C (6–12, X)', d:'Submetacéntricos medianos; incluye el cromosoma X.' },
+          { id:'gD', t:'Grupo D (13–15)', d:'Acrocéntricos medianos.' },
+          { id:'gE', t:'Grupo E (16–18)', d:'Submetacéntricos pequeños.' },
+          { id:'gF', t:'Grupo F (19–20)', d:'Metacéntricos pequeños.' },
+          { id:'gG', t:'Grupo G (21–22, Y)', d:'Acrocéntricos pequeños; incluye el cromosoma Y.' },
+        ]},
+        { id:'idio', t:'Idiograma', d:'Representación esquemática a escala del cariotipo, con bandas e interbandas; los cromosomas se alinean por el centrómero y con el brazo largo hacia abajo.' },
+        { id:'bandasg', t:'Bandas G y patrón de bandas', d:'Tinción que produce un patrón de bandas (~400 bandas) único para cada cromosoma, lo que permite identificarlos.' },
+        { id:'sky', t:'Cariotipo espectral multicolor', d:'Técnica que marca cada par cromosómico con un color fluorescente distinto.' },
+        { id:'locali', t:'Localización cromosómica', d:'Sistema para ubicar una banda: nº de cromosoma + símbolo del brazo + nº de región + nº de banda (ej. 14q32.1).', children:[
+          { id:'marca', t:'Marca', d:'Característica morfológica consistente y distintiva del cromosoma.' },
+          { id:'region', t:'Región', d:'Área del cromosoma comprendida entre dos marcas adyacentes.' },
+          { id:'banda', t:'Banda', d:'Parte del cromosoma que puede distinguirse de los segmentos adyacentes.' },
+          { id:'subb', t:'Sub-banda', d:'Segmento de una banda (y la sub-sub-banda, segmento de una sub-banda).' },
+        ]},
+      ]},
+    { id:'alter', code:'2.2.4', t:'Alteraciones cromosómicas', color:'--c-alter', icon:'⚠️',
+      d:'Cualquier alteración en el número y/o en la morfología de los cromosomas. Se dividen en numéricas y estructurales.',
+      children:[
+        { id:'numericas', t:'Numéricas', d:'Cambio en la dotación de cromosomas (en el número).', children:[
+          { id:'euploidias', t:'Euploidías', d:'Variación en el número de juegos completos de cromosomas.', children:[
+            { id:'haploide', t:'Haploide', d:'1 juego cromosómico (normal en las células reproductivas).' },
+            { id:'diploide', t:'Diploide', d:'2 juegos cromosómicos (normal en las células somáticas).' },
+            { id:'poliploide', t:'Poliploide', d:'3 o más juegos (triploidía, tetraploidía…). Anormal y no compatible con la vida; resulta ventajoso en las plantas.' },
+          ]},
+          { id:'aneuploidias', t:'Aneuploidías', d:'Variación en cromosomas únicos, no en juegos completos.', children:[
+            { id:'mono', t:'Monosomías (2n−1)', d:'Falta un cromosoma. Generalmente letales; la única viable en humanos es la del X (S. de Turner).' },
+            { id:'tri', t:'Trisomías (2n+1)', d:'Un cromosoma extra; más viables que las monosomías. Autosómicas: 21 (Down), 18 (Edwards), 13 (Patau). Gonosómicas: triple X, Klinefelter, XYY.' },
+            { id:'nuli', t:'Nulisomías (2n−2)', d:'Pérdida de ambos cromosomas homólogos de un par; letales en organismos diploides.' },
+          ]},
+          { id:'nodisy', t:'No disyunción', d:'Falla en la separación de los cromosomas durante la división celular. Es la principal causa de las aneuploidías.' },
+          { id:'etio', t:'Etiología', d:'Causas de las alteraciones cromosómicas.',
+            c:'• Edad materna (avanzada o muy temprana)\n• Edad paterna avanzada\n• Radiaciones\n• Agentes biológicos (virus)\n• Agentes químicos (fármacos, drogas, cafeína, tabaco…)\n• Mutaciones génicas espontáneas' },
+          { id:'down', t:'Síndrome de Down', d:'Trisomía del cromosoma 21.',
+            c:'Fórmula cromosómica:\n  • Trisomía regular: 47,XX,+21  ó  47,XY,+21\n  • Por translocación: 46,XX,t(14;21)\n\nCuadro clínico: retraso mental, perfil facial aplanado, pliegue palmar de simio, manos cortas y anchas, varones estériles, Alzheimer en la adultez.' },
+          { id:'turner', t:'Síndrome de Turner', d:'Pérdida de un cromosoma sexual en la mujer.',
+            c:'Fórmula cromosómica: 45,X\n\nCuadro clínico: talla baja, obesidad, implantación baja del cabello, infantilismo sexual, esterilidad, pliegues en el cuello. NO presentan retraso mental.' },
+          { id:'kline', t:'Síndrome de Klinefelter', d:'Cromosoma X adicional en un varón.',
+            c:'Fórmula cromosómica: 47,XXY\n\nCuadro clínico: piernas largas, alto y delgado, hipogonadismo con testículos pequeños, pene pequeño, azoospermia (infértil), virilización inadecuada, ginecomastia. NO presenta retraso mental.' },
+        ]},
+        { id:'estruct', t:'Estructurales', d:'Cambios en la forma y/o el tamaño del cromosoma por roturas mal reparadas. Equilibrada: se conserva el material genético; desequilibrada: se gana o se pierde material.', children:[
+          { id:'delec', t:'Deleciones', d:'Pérdida de un segmento cromosómico; producen monosomías parciales. Terminal (una rotura) o intersticial (dos roturas).',
+            c:'Ejemplos en humanos:\n  • Deleción del brazo corto del cromosoma 4 → S. de Wolf-Hirschhorn\n  • Deleción del brazo corto del cromosoma 5 → S. Cri du Chat (maullido de gato)' },
+          { id:'microdel', t:'Microdeleciones', d:'Deleciones muy pequeñas (un solo gen o pocos). No se ven en el cariotipo normal; se detectan por FISH (hibridación in situ con fluorescencia).',
+            c:'Síndromes por microdeleción:\n  • Prader-Willi\n  • Angelman\n  • Miller-Dieker\n  • Williams\n  • DiGeorge\n  • Langer-Giedion' },
+          { id:'duplic', t:'Duplicaciones', d:'Adición de partes cromosómicas (material genético extra). En general más viables que las deleciones; la redundancia puede proteger al organismo.',
+            c:'Ejemplo: duplicación de 12p → S. de Pallister-Killian.' },
+          { id:'invers', t:'Inversiones', d:'Un segmento sufre una rotación de 180° y se vuelve a unir. Pericéntrica: incluye el centrómero (roturas en brazos distintos). Paracéntrica: no lo incluye (mismo brazo). Suelen afectar la fertilidad, no el fenotipo.' },
+          { id:'trans', t:'Translocaciones', d:'Intercambio de segmentos entre cromosomas NO homólogos. Los portadores suelen ser fenotípicamente normales, pero con la fertilidad afectada.', children:[
+            { id:'tsimple', t:'Simple', d:'Un cromosoma transfiere parte de su contenido a otro no homólogo: uno queda disminuido y el otro aumentado.' },
+            { id:'trecip', t:'Recíproca', d:'La más frecuente: dos cromosomas no homólogos se rompen e intercambian segmentos entre sí.' },
+            { id:'trobert', t:'Robertsoniana', d:'Fusión de dos cromosomas acrocéntricos que da lugar a un metacéntrico/submetacéntrico. Ej.: una forma del Síndrome de Down.' },
+          ]},
+          { id:'iso', t:'Isocromosomas', d:'Pérdida de un brazo con duplicación del otro (división transversal del centrómero en vez de longitudinal). Se da en los cromosomas 16 y X (causa S. de Turner).' },
+          { id:'anillo', t:'Cromosomas en anillo', d:'Dos roturas terminales dejan extremos «pegajosos» que se unen formando un anillo, lo que inactiva el cromosoma. Se da en 6, 17 y X (S. de Turner).' },
+        ]},
+      ]},
+   ]},
+];
+const RELS = [
+  ['meiosis','gameto','forma los gametos'],['gameto','fecund','culmina en'],['fecund','mitosis','inicia ciclos de'],
+  ['crossing','reduc','genera variabilidad'],['nodisy','aneuploidias','causa'],['aneuploidias','down','ejemplo'],
+  ['aneuploidias','turner','ejemplo'],['trobert','down','puede causar'],['iso','turner','causa'],['anillo','turner','causa'],
+  ['hfac','barr','forma el'],['barr','inactx','resulta de'],['inactx','turner','dosis de X'],['fs','metafase','el ADN duplicado se reparte en'],
+  ['delec','microdel','versión menor'],
+];
+/*__DATA_END__*/
+
+// imágenes de las diapositivas (carpeta img/)
+const IMG = {
+ interfase:["t1_s08_64d94ca6.png","Las fases del ciclo celular: G1, S, G2 y M"],
+ reg:["t1_s10_5e870f08.jpeg","Control del ciclo por ciclinas"],
+ control:["t1_s10_065d4fb9.png","Niveles de ciclinas a lo largo del ciclo"],
+ mreq:["t1_s16_50aac5a4.png","Huso mitótico, centrosomas y cinetocoro"],
+ huso:["t1_s16_50aac5a4.png","El huso mitótico anclado a los cromosomas"],
+ profase:["t1_s17_eff6eaa1.jpeg","Profase vista al microscopio"],
+ prometa:["t1_s18_739418c2.jpeg","Prometafase vista al microscopio"],
+ metafase:["t1_s19_36dc274c.jpeg","Metafase: cromosomas en la placa ecuatorial"],
+ anafase:["t1_s20_09e96762.jpeg","Anafase: separación de cromátidas hermanas"],
+ telofase:["t1_s21_a7a83805.jpeg","Telofase"],
+ meiosisI:["t1_s34_0bb827e7.jpeg","Esquema de la meiosis I"],
+ profaseI:["t1_s32_529e4134.jpeg","Las 5 subetapas de la profase I"],
+ crossing:["t1_s33_58a4cf56.jpeg","Entrecruzamiento (crossing over) entre homólogos"],
+ compara:["t1_s38_25d5f91f.png","Comparación entre mitosis y meiosis"],
+ esperma:["t1_s41_8f7e1e07.jpeg","Espermatogénesis y ovogénesis"],
+ ovo:["t1_s42_4cdce402.jpg","Folículos en el ovario (ovogénesis)"],
+ regovo:["t1_s44_bfdda945.png","Arresto de la meiosis del ovocito"],
+ hetero:["t2_s08_e72a0c60.jpeg","Eucromatina (clara) y heterocromatina (oscura)"],
+ eu:["t2_s08_e72a0c60.jpeg","Eucromatina y heterocromatina en el núcleo"],
+ barr:["t2_s09_5f38c283.jpeg","Cuerpo de Barr: mujer (1) vs hombre (0)"],
+ inactx:["t2_s10_3b4a97ac.jpeg","Inactivación de un cromosoma X"],
+ tipos:["t2_s14_8d081b8f.png","Metacéntrico, submetacéntrico y acrocéntrico"],
+ partes:["t2_s16_a5b96ebe.png","Partes de un cromosoma"],
+ autogono:["t2_s15_60fd557f.png","Cromosomas X e Y"],
+ grupos:["t2_s22_9708c2f9.jpeg","Grupos A–G del cariotipo humano"],
+ idio:["t2_s24_27818af6.jpeg","Cariotipo e idiograma con bandas G"],
+ bandasg:["t2_s29_f69e8621.png","Patrón de bandas del cariotipo humano"],
+ locali:["t2_s27_12259881.png","Localización por regiones y bandas"],
+ sky:["t2_s33_5d74321c.png","Cariotipo espectral multicolor (SKY)"],
+ euploidias:["t2_s38_e87b7b5f.jpeg","Juegos cromosómicos (euploidías)"],
+ delec:["t2_s51_48693cdc.png","Deleción de un segmento (antes / después)"],
+ duplic:["t2_s53_2a4ec66b.png","Duplicación de un segmento (antes / después)"],
+ invers:["t2_s54_22e0683f.png","Inversión pericéntrica (giro de 180°)"],
+ trans:["t2_s55_217cdcfc.png","Translocaciones entre cromosomas"],
+ trobert:["t2_s56_ef7076bf.png","Translocación robertsoniana"],
+ iso:["t2_s58_99c31ed9.png","Isocromosoma"],
+ anillo:["t2_s59_5cbec8b6.png","Cromosoma en anillo"],
+ ciclo:["t1_s08_64d94ca6.png","Las fases del ciclo celular"],
+ mitosis:["t1_s16_50aac5a4.png","La mitosis: huso, centrosomas y cinetocoro"],
+ meiosis:["t1_s30_092eea08.png","Las etapas de la meiosis"],
+ gameto:["t1_s41_8f7e1e07.jpeg","Espermatogénesis y ovogénesis"],
+ cromatina:["t2_s08_e72a0c60.jpeg","Eucromatina y heterocromatina"],
+ cromosomas:["t2_s15_60fd557f.png","Cromosomas X e Y"],
+ cariotipo:["t2_s22_9708c2f9.jpeg","Grupos A–G del cariotipo humano"],
+ alter:["t2_s38_e87b7b5f.jpeg","Alteraciones del número de cromosomas"],
+ meiosisII:["t1_s36_1f99361f.png","Meiosis II"],
+ fecund:["t1_s42_3d0a274c.png","La fecundación"],
+ estruct:["t2_s55_217cdcfc.png","Alteraciones estructurales"],
+ microdel:["t2_s51_48693cdc.png","Microdeleción (deleción muy pequeña)"],
+ numericas:["t2_s38_e87b7b5f.jpeg","Cambios en el número de cromosomas"],
+ nodisy:["t2_s46_936c3a62.jpeg","No disyunción durante la meiosis"],
+ down:["t2_s47_994fc03b.jpeg","Origen de la trisomía 21 por no disyunción"],
+};
+// las notas amplias viven en window.CITO_NOTES (archivo notes.js)
+
+(function(){
+  const SVGNS='http://www.w3.org/2000/svg';
+  const byId={}, parentOf={}, sectionOf={}, colorVarOf={}, iconOf={};
+  TEMAS.forEach(tema=>tema.sections.forEach(sec=>{
+    (function walk(n,parent,sid){ byId[n.id]=n; parentOf[n.id]=parent; sectionOf[n.id]=sid; colorVarOf[n.id]=sec.color; iconOf[n.id]=sec.icon;
+      (n.children||[]).forEach(c=>walk(c,n.id,sid)); })(sec,null,sec.id);
+  }));
+  const cssCol=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim()||'#888';
+  const countAll=n=>{let t=1;(n.children||[]).forEach(c=>t+=countAll(c));return t;};
+  const noteText=id=>{const N=window.CITO_NOTES||{};return (N[id]&&N[id].note)||byId[id].d||'';};
+  const clinText=id=>{const N=window.CITO_NOTES||{};return byId[id].c||(N[id]&&N[id].clinical)||'';};
+
+  // ---------- HOME mind map ----------
+  const homeSvg=document.getElementById('homeSvg');
+  function wrap2(s,max){ const w=s.split(' '),L=[];let c='';for(const x of w){if((c+' '+x).trim().length<=max)c=(c+' '+x).trim();else{L.push(c);c=x;}}if(c)L.push(c);return L.slice(0,2);}
+  function buildHome(){
+    const cx=620, cy=380;
+    const left=TEMAS[0].sections, right=TEMAS[1].sections;
+    const ys=[150,300,460,610];
+    const place=[];
+    left.forEach((s,i)=>place.push({s,x:250,y:ys[i],side:-1}));
+    right.forEach((s,i)=>place.push({s,x:990,y:ys[i],side:1}));
+    let svg='';
+    // branches
+    place.forEach(p=>{
+      const c=cssCol(p.s.color);
+      const sx=cx+p.side*118, sy=cy, ex=p.x-p.side*112, ey=p.y;
+      const c1x=cx+p.side*300, c2x=p.x-p.side*210;
+      svg+=`<path class="hbranch" d="M${sx},${sy} C${c1x},${sy} ${c2x},${ey} ${ex},${ey}" stroke="${c}" stroke-width="5" opacity=".8"/>`;
+    });
+    // tema labels
+    svg+=`<text x="250" y="86" text-anchor="middle" font-family="Baloo 2" font-weight="800" font-size="15" letter-spacing="1.5" fill="#6f7889">TEMA 1 · 2.1</text>`;
+    svg+=`<text x="990" y="86" text-anchor="middle" font-family="Baloo 2" font-weight="800" font-size="15" letter-spacing="1.5" fill="#6f7889">TEMA 2 · 2.2</text>`;
+    // center node
+    svg+=`<g class="hnode" data-home="center"><rect class="nodeBox lift" x="${cx-118}" y="${cy-48}" width="236" height="96" rx="26" fill="#2b2f38"/>`+
+         `<text class="lift" x="${cx}" y="${cy-6}" text-anchor="middle" font-family="Baloo 2" font-weight="800" font-size="23" fill="#fff">Citogenética</text>`+
+         `<text class="lift" x="${cx}" y="${cy+22}" text-anchor="middle" font-family="Nunito" font-weight="700" font-size="14" fill="#aeb6c4">Unidad II · Genética I</text></g>`;
+    // section nodes
+    place.forEach(p=>{
+      const c=cssCol(p.s.color), x=p.x, y=p.y, w=224, h=66;
+      const lines=wrap2(p.s.t,20);
+      const ty=lines.length>1?y-6:y+1;
+      let label=lines.map((ln,i)=>`<text class="lift" x="${x}" y="${ty+i*22}" text-anchor="middle" font-family="Baloo 2" font-weight="700" font-size="17" fill="#2b2f38">${ln}</text>`).join('');
+      svg+=`<g class="hnode" data-home="${p.s.id}">`+
+        `<rect class="nodeBox lift" x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="20" fill="${c}22" stroke="${c}" stroke-width="2.5"/>`+
+        `<circle class="lift" cx="${x-w/2+22}" cy="${y-h/2-2}" r="15" fill="${c}"/>`+
+        `<text class="lift" x="${x-w/2+22}" y="${y-h/2+3}" text-anchor="middle" font-size="15">${p.s.icon}</text>`+
+        `<text class="lift" x="${x+w/2-12}" y="${y-h/2+15}" text-anchor="end" font-family="Baloo 2" font-weight="700" font-size="11" fill="${c}">${p.s.code}</text>`+
+        label+
+        `<text class="lift" x="${x}" y="${y+h/2-8}" text-anchor="middle" font-family="Nunito" font-weight="700" font-size="11" fill="#6b7585">${countAll(p.s)-1} temas →</text>`+
+        `</g>`;
+    });
+    homeSvg.innerHTML=svg;
+    homeSvg.querySelectorAll('.hnode').forEach(g=>{ const id=g.dataset.home; if(id!=='center') g.addEventListener('click',()=>openSection(id)); });
+  }
+
+  // ---------- FOCUS ----------
+  const focusEl=document.getElementById('focus'), worldEl=document.getElementById('world'),
+        cardsEl=document.getElementById('cards'), edgesEl=document.getElementById('edges'),
+        homeEl=document.getElementById('home'), bar=document.getElementById('bar'),
+        crumb=document.getElementById('crumb'), ftools=document.getElementById('ftools');
+  const CW=226, COLW=300, GAP=28;
+  const collapsed={}, collapsedInit={};
+  let currentSec=null, cardElById={};
+
+  function initCollapse(secId){ (function w(n,depth){ collapsed[n.id]=depth>=1&&!!(n.children&&n.children.length); (n.children||[]).forEach(c=>w(c,depth+1)); })(byId[secId],0); }
+
+  function openSection(secId){
+    currentSec=secId;
+    const sec=byId[secId], tema=TEMAS.find(t=>t.sections.some(s=>s.id===secId));
+    homeEl.classList.add('hidden'); focusEl.classList.add('active'); ftools.classList.remove('hidden'); bar.classList.add('infocus');
+    crumb.innerHTML=`<span style="color:${cssCol(sec.color)}">${tema.code}</span> ${tema.title} <span style="opacity:.4">›</span> <span class="sec">${sec.icon} ${sec.t}</span>`;
+    layoutAndRender(true);
+  }
+  function returnHome(){ focusEl.classList.remove('active'); ftools.classList.add('hidden'); bar.classList.remove('infocus'); homeEl.classList.remove('hidden'); closeNote(); }
+
+  function imgFor(id){ let x=id; while(x){ if(IMG[x]) return IMG[x]; x=parentOf[x]; } return null; }
+  function visNodes(secId){ const out=[]; (function w(n,depth){ n._depth=depth; out.push(n); if(!collapsed[n.id]&&n.children) n.children.forEach(c=>w(c,depth+1)); })(byId[secId],0); return out; }
+  function makeCard(n,c){
+    const card=document.createElement('div'); card.className='ncard'+(n.id===currentSec?' root':''); card.dataset.id=n.id; card.style.setProperty('--c',c);
+    const im=imgFor(n.id);
+    card.innerHTML=(n.id===currentSec?`<div class="ic">${byId[n.id].icon||'•'}</div>`:'')+
+      (n.code?`<div class="code">${n.code}</div>`:'')+`<h4>${n.t}</h4><p>${n.d||''}</p>`+
+      (im?`<img class="thumb" src="img/${im[0]}" alt="${im[1]}" loading="lazy" onerror="this.remove()">`:'')+
+      (clinText(n.id)?'<div class="pin" title="Incluye datos clínicos">⚕</div>':'');
+    if(n.children&&n.children.length){ const ch=document.createElement('div'); ch.className='chev';
+      ch.innerHTML=(collapsed[n.id]?'+':'−')+(collapsed[n.id]?`<span class="cnt">${countAll(n)-1}</span>`:'');
+      ch.onclick=e=>{ e.stopPropagation(); collapsed[n.id]=!collapsed[n.id]; layoutAndRender(false); }; card.appendChild(ch); }
+    card.onclick=()=>openNote(n.id);
+    return card;
+  }
+  function layoutAndRender(refit){
+    const ns=visNodes(currentSec), c=cssCol(byId[currentSec].color);
+    cardsEl.innerHTML=''; cardElById={};
+    ns.forEach(n=>{ const card=makeCard(n,c); cardsEl.appendChild(card); cardElById[n.id]=card; });
+    ns.forEach(n=>{ n._h=cardElById[n.id].offsetHeight||130; });           // medir altura REAL (evita que se monten)
+    let cur=0;
+    (function place(n){ n._x=n._depth*COLW; const k=(!collapsed[n.id]&&n.children)?n.children:[];
+      if(!k.length){ n._top=cur; cur+=n._h+GAP; } else { k.forEach(place); const f=k[0],l=k[k.length-1]; n._top=(f._top + l._top+l._h)/2 - n._h/2; } })(byId[currentSec]);
+    let mx=0,my=0;
+    ns.forEach(n=>{ const card=cardElById[n.id]; card.style.left=n._x+'px'; card.style.top=n._top+'px'; mx=Math.max(mx,n._x+CW); my=Math.max(my,n._top+n._h); });
+    worldEl.style.width=mx+'px'; worldEl.style.height=my+'px'; edgesEl.setAttribute('width',mx); edgesEl.setAttribute('height',my);
+    let paths='';
+    ns.forEach(n=>{ const k=(!collapsed[n.id]&&n.children)?n.children:[]; k.forEach(ch=>{
+      const x1=n._x+CW,y1=n._top+n._h/2,x2=ch._x,y2=ch._top+ch._h/2,mxp=(x1+x2)/2;
+      paths+=`<path class="edge" d="M${x1},${y1} C${mxp},${y1} ${mxp},${y2} ${x2},${y2}" stroke="${c}" stroke-width="${Math.max(2,4-n._depth*0.5)}" opacity="${0.32+0.12*(2-Math.min(n._depth,2))}"/>`;
+    });});
+    edgesEl.innerHTML=paths;
+    if(refit) fitView(); else applyView();
+  }
+
+  // pan/zoom
+  let view={x:60,y:40,k:1};
+  function clampView(){ const vw=focusEl.clientWidth,vh=focusEl.clientHeight,w=worldEl.offsetWidth*view.k,h=worldEl.offsetHeight*view.k,m=120;
+    if(w>0) view.x=Math.min(vw-m,Math.max(m-w,view.x)); if(h>0) view.y=Math.min(vh-m,Math.max(m-h,view.y)); }
+  function applyView(){ clampView(); worldEl.style.transform=`translate(${view.x}px,${view.y}px) scale(${view.k})`; }
+  function fitView(){ const w=worldEl.offsetWidth,h=worldEl.offsetHeight,vw=focusEl.clientWidth,vh=focusEl.clientHeight;
+    if(!w||!h) return; view.k=Math.max(0.5,Math.min((vw-110)/w,(vh-120)/h,1)); view.x=Math.max(40,(vw-w*view.k)/2);
+    view.y=(h*view.k<=vh-60)?Math.max(30,(vh-h*view.k)/2):84; applyView(); }
+  let drag=false,last=null,moved=0;
+  focusEl.addEventListener('pointerdown',e=>{ if(e.target.closest('.ncard'))return; drag=true;moved=0;last={x:e.clientX,y:e.clientY};focusEl.classList.add('grabbing');focusEl.setPointerCapture(e.pointerId); });
+  focusEl.addEventListener('pointermove',e=>{ if(!drag)return; const dx=e.clientX-last.x,dy=e.clientY-last.y;moved+=Math.abs(dx)+Math.abs(dy);view.x+=dx;view.y+=dy;last={x:e.clientX,y:e.clientY};applyView(); });
+  focusEl.addEventListener('pointerup',()=>{drag=false;focusEl.classList.remove('grabbing');});
+  focusEl.addEventListener('pointercancel',()=>{drag=false;focusEl.classList.remove('grabbing');});
+  focusEl.addEventListener('wheel',e=>{ e.preventDefault(); const r=focusEl.getBoundingClientRect(),mxp=e.clientX-r.left,myp=e.clientY-r.top,wx=(mxp-view.x)/view.k,wy=(myp-view.y)/view.k,f=e.deltaY<0?1.12:1/1.12;
+    view.k=Math.max(0.35,Math.min(2.2,view.k*f)); view.x=mxp-wx*view.k; view.y=myp-wy*view.k; applyView(); },{passive:false});
+  document.getElementById('zoomIn').onclick=()=>{view.k=Math.min(2.2,view.k*1.18);applyView();};
+  document.getElementById('zoomOut').onclick=()=>{view.k=Math.max(0.35,view.k/1.18);applyView();};
+  document.getElementById('fit').onclick=fitView;
+  document.getElementById('expandAll').onclick=()=>{(function w(n){if(n.children&&n.children.length){collapsed[n.id]=false;n.children.forEach(w);}})(byId[currentSec]);layoutAndRender(true);};
+  document.getElementById('collapseAll').onclick=()=>{(function w(n,d){if(n.children&&n.children.length){collapsed[n.id]=d>=1;n.children.forEach(c=>w(c,d+1));}})(byId[currentSec],0);layoutAndRender(true);};
+
+  function focusNode(id,openN){ let x=parentOf[id]; while(x){collapsed[x]=false;x=parentOf[x];} layoutAndRender(false);
+    const n=byId[id],vw=focusEl.clientWidth,vh=focusEl.clientHeight; view.k=Math.max(view.k,0.8); view.x=vw/2-(n._x+CW/2)*view.k; view.y=vh/2-(n._top+(n._h||130)/2)*view.k; applyView();
+    const card=cardElById[id]; if(card){card.classList.add('hl');setTimeout(()=>card.classList.remove('hl'),2200);} if(openN) openNote(id); }
+
+  // ---------- NOTE modal ----------
+  const note=document.getElementById('note'), scrim=document.getElementById('scrim');
+  function openNote(id){
+    const n=byId[id], sec=byId[sectionOf[id]], c=cssCol(colorVarOf[id]);
+    note.style.setProperty('--nc',c); note.style.setProperty('--nbg', c+'1f');
+    document.getElementById('nbadge').innerHTML=`<span class="e">${sec.icon}</span> ${n.code||sec.code} · ${sec.t}`;
+    document.getElementById('nbadge').style.background=c;
+    document.getElementById('ntitle').textContent=n.t;
+    const fig=document.getElementById('nfig'), im=imgFor(id);
+    if(im){ fig.classList.remove('hidden'); const ni=document.getElementById('nimg'); ni.alt=im[1]; ni.onerror=()=>fig.classList.add('hidden'); ni.src='img/'+im[0]; document.getElementById('ncap').textContent=im[1]; }
+    else fig.classList.add('hidden');
+    document.getElementById('ntxt').textContent=noteText(id);
+    const cl=document.getElementById('nclin'); const ct=clinText(id);
+    if(ct){ cl.classList.remove('hidden'); document.getElementById('nclinh').style.color=c; document.getElementById('nclinp').textContent=ct; } else cl.classList.add('hidden');
+    // related
+    const rel=[],seen=new Set(); const pid=parentOf[id]; if(pid){rel.push({id:pid,t:byId[pid].t,a:'parte de'});seen.add(pid);}
+    (n.children||[]).forEach(ch=>{if(!seen.has(ch.id)){rel.push({id:ch.id,t:ch.t,a:'incluye'});seen.add(ch.id);}});
+    RELS.forEach(r=>{ if(r[0]===id&&!seen.has(r[1])&&byId[r[1]]){rel.push({id:r[1],t:byId[r[1]].t,a:r[2]});seen.add(r[1]);} if(r[1]===id&&!seen.has(r[0])&&byId[r[0]]){rel.push({id:r[0],t:byId[r[0]].t,a:r[2]});seen.add(r[0]);} });
+    const rb=document.getElementById('nrel'); rb.innerHTML='';
+    if(rel.length){ rb.classList.remove('hidden'); rb.innerHTML='<div class="rl">Conectado con</div>'+rel.map(r=>`<button data-go="${r.id}"><span class="a">${r.a}</span>${r.t}</button>`).join('');
+      rb.querySelectorAll('button').forEach(b=>b.onclick=()=>{ const gid=b.dataset.go, tsid=sectionOf[gid]; closeNote(); if(tsid!==currentSec){openSection(tsid);setTimeout(()=>focusNode(gid,true),360);} else {focusNode(gid,true);} }); }
+    else rb.classList.add('hidden');
+    document.querySelector('.note .nbody').scrollTop=0;
+    note.classList.add('open'); scrim.classList.add('show');
+  }
+  function closeNote(){ note.classList.remove('open'); scrim.classList.remove('show'); }
+  document.getElementById('nclose').onclick=closeNote; scrim.onclick=closeNote;
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(note.classList.contains('open'))closeNote(); else if(focusEl.classList.contains('active'))returnHome(); return; }
+    if(focusEl.classList.contains('active') && !note.classList.contains('open') && document.activeElement.tagName!=='INPUT'){
+      if(e.key==='+'||e.key==='='){ view.k=Math.min(2.2,view.k*1.15); applyView(); }
+      else if(e.key==='-'||e.key==='_'){ view.k=Math.max(0.35,view.k/1.15); applyView(); } } });
+
+  // ---------- search ----------
+  const si=document.getElementById('search'), results=document.getElementById('results');
+  const flat=Object.keys(byId).map(id=>({id,t:byId[id].t,d:byId[id].d||'',sec:byId[sectionOf[id]].t,c:colorVarOf[id]}));
+  const norm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+  let matches=[],selIdx=-1;
+  si.addEventListener('input',()=>{ const q=norm(si.value.trim()); if(!q){results.classList.add('hidden');return;}
+    const tH=flat.filter(o=>norm(o.t).includes(q)), dH=flat.filter(o=>!norm(o.t).includes(q)&&(norm(o.d).includes(q)||norm(noteText(o.id)).includes(q)));
+    matches=[...tH,...dH].slice(0,12); selIdx=-1;
+    if(!matches.length){results.innerHTML='<div class="none">Sin resultados</div>';results.classList.remove('hidden');return;}
+    results.innerHTML=matches.map((o,i)=>`<div class="r" data-i="${i}"><span class="dot" style="background:${cssCol(o.c)}"></span><div><div class="rt">${o.t}</div><div class="rc">${o.sec}</div></div></div>`).join('');
+    results.classList.remove('hidden'); results.querySelectorAll('.r').forEach(el=>el.onclick=()=>pick(+el.dataset.i)); });
+  function pick(i){ const o=matches[i]; if(!o)return; results.classList.add('hidden'); si.value=''; const sid=sectionOf[o.id];
+    if(sid!==currentSec||!focusEl.classList.contains('active')) openSection(sid); setTimeout(()=>focusNode(o.id,true), sid!==currentSec?420:30); }
+  si.addEventListener('keydown',e=>{ if(results.classList.contains('hidden'))return;
+    if(e.key==='ArrowDown'){e.preventDefault();selIdx=Math.min(matches.length-1,selIdx+1);}
+    else if(e.key==='ArrowUp'){e.preventDefault();selIdx=Math.max(0,selIdx-1);}
+    else if(e.key==='Enter'){e.preventDefault();pick(selIdx<0?0:selIdx);return;} else return;
+    results.querySelectorAll('.r').forEach((el,i)=>el.classList.toggle('sel',i===selIdx)); const se=results.querySelector('.r.sel'); if(se)se.scrollIntoView({block:'nearest'}); });
+  document.addEventListener('click',e=>{ if(!e.target.closest('.search'))results.classList.add('hidden'); });
+
+  document.getElementById('back').onclick=returnHome;
+  document.getElementById('brand').onclick=returnHome;
+  window.addEventListener('resize',()=>{ if(focusEl.classList.contains('active'))applyView(); });
+  buildHome();
+})();
+</script>
+<script src="notes.js" onerror="void 0"></script>
+</body>
+</html>
