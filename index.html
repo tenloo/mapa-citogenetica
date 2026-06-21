@@ -59,6 +59,9 @@
   .homeHead p{font-size:15px; color:var(--ink2); margin:9px 0 0; line-height:1.5; font-weight:500}
   .homeHead .tip{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-size:13px;font-weight:700;color:var(--ink2);background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 15px}
   .mapWrap{width:100%; max-width:1180px; margin-top:4px}
+  .credit{text-align:center; margin:18px auto 6px; font-size:13.5px; color:var(--muted); font-weight:600; line-height:1.65}
+  .credit b{color:var(--ink2); font-family:var(--disp); font-weight:700}
+  .credit span{font-size:12px; color:#8a92a0}
   #homeSvg{width:100%; height:auto; display:block; overflow:visible}
   .hnode{cursor:pointer}
   .hnode rect{transition:transform .15s}
@@ -154,6 +157,7 @@
         <div class="tip">👆 <span>Toca un área para empezar</span></div>
       </div>
       <div class="mapWrap"><svg id="homeSvg" viewBox="0 0 1240 740" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <div class="credit">Elaborado por <b>Lic. Gabriela Ramos</b> · Genética I — Unidad II<br><span>Contenido basado en el material de la Dra. Virna López · UPNFM</span></div>
     </div>
   </div>
 
@@ -228,11 +232,12 @@ const TEMAS = [
           { id:'profaseI', t:'Profase I', d:'Fase larga con cinco subetapas; ocurre el apareamiento de los homólogos y la recombinación.', children:[
             { id:'lepto', t:'Leptoteno', d:'El ADN comienza a condensarse.' },
             { id:'zigo', t:'Zigoteno', d:'Las secuencias homólogas se reconocen; comienza la sinapsis (bivalentes) y se forma el complejo sinaptonémico.' },
-            { id:'paqui', t:'Paquiteno', d:'Mayor condensación. Inicia la recombinación; se observan las tétradas y ocurre el entrecruzamiento → variabilidad genética.' },
+            { id:'paqui', t:'Paquiteno', d:'Mayor condensación. Inicia la recombinación; se observan las tétradas y ocurre el entrecruzamiento → variabilidad genética.', children:[
+              { id:'crossing', t:'Entrecruzamiento (crossing over)', d:'Intercambio de genes entre cromosomas homólogos apareados. Ocurre en el paquiteno. Genera diversidad genética: material para la selección natural y la evolución de las especies.' },
+            ] },
             { id:'diplo', t:'Diploteno', d:'Desaparece el complejo sinaptonémico; los homólogos se separan pero siguen unidos en los quiasmas (puntos de recombinación). En los ovocitos la célula se arresta aquí.' },
             { id:'diaci', t:'Diacinesis', d:'Final de la profase I; cromosomas completamente condensados unidos por los quiasmas. Transición a la metafase.' },
           ]},
-          { id:'crossing', t:'Entrecruzamiento (crossing over)', d:'Intercambio de genes entre cromosomas homólogos apareados. Genera diversidad genética: material para la selección natural y la evolución de las especies.' },
           { id:'metaI', t:'Metafase I', d:'Los cromosomas bivalentes se alinean en el huso.' },
           { id:'anaI', t:'Anafase I', d:'Se separan los cromosomas homólogos (desde los quiasmas); las cromátidas hermanas permanecen unidas por sus centrómeros.' },
           { id:'reduc', t:'División reduccional', d:'Al completarse la meiosis I cada célula hija tiene un miembro de cada par homólogo (con dos cromátidas). Ya son haploides.' },
@@ -267,9 +272,10 @@ const TEMAS = [
         { id:'eu', t:'Eucromatina', d:'«Cromatina verdadera». Se tiñe débilmente; en ella se encuentran la mayoría de los genes activos o funcionales.' },
         { id:'hetero', t:'Heterocromatina', d:'Se tiñe más fuertemente. Se divide en dos clases: constitutiva y facultativa.', children:[
           { id:'hconst', t:'Constitutiva', d:'Cromatina que nunca se activa; se ubica principalmente en las zonas cercanas al centrómero.' },
-          { id:'hfac', t:'Facultativa', d:'En un momento dado expresa información y luego se inactiva; ejemplo: el cromosoma X de la hembra (Cuerpo de Barr).' },
+          { id:'hfac', t:'Facultativa', d:'En un momento dado expresa información y luego se inactiva; ejemplo: el cromosoma X de la hembra (Cuerpo de Barr).', children:[
+            { id:'barr', t:'Cuerpo de Barr', d:'Uno de los cromosomas X de la hembra se condensa e inactiva sus genes, formando el corpúsculo de Barr. Es el ejemplo clásico de heterocromatina facultativa.' },
+          ]},
         ]},
-        { id:'barr', t:'Cuerpo de Barr', d:'Uno de los cromosomas X de la hembra se condensa e inactiva sus genes, formando el corpúsculo de Barr.' },
         { id:'inactx', t:'Inactivación del cromosoma X', d:'Proceso regulado en hembras de mamíferos durante la embriogénesis (día 16, blastocisto). Mantiene el equilibrio génico entre ambos sexos.', children:[
           { id:'xist', t:'Gen XIST', d:'Gen dentro de la región XIC (X inactivation center, Xq13.2). Codifica un ARN de 17 kb poliadenilado que no se traduce y recubre el X que será inactivado.' },
           { id:'lyon', t:'Hipótesis de Lyon', d:'La inactivación al azar de uno de los X se mantiene durante toda la vida; ~15 % de los genes del X inactivo siguen activos (incluido XIST).' },
@@ -310,6 +316,7 @@ const TEMAS = [
         { id:'bandasg', t:'Bandas G y patrón de bandas', d:'Tinción que produce un patrón de bandas (~400 bandas) único para cada cromosoma, lo que permite identificarlos.' },
         { id:'sky', t:'Cariotipo espectral multicolor', d:'Técnica que marca cada par cromosómico con un color fluorescente distinto.' },
         { id:'locali', t:'Localización cromosómica', d:'Sistema para ubicar una banda: nº de cromosoma + símbolo del brazo + nº de región + nº de banda (ej. 14q32.1).', children:[
+          { id:'brazopq', t:'Brazo (p y q)', d:'Indica en qué brazo está la banda: el brazo corto o pequeño es el p (se dibuja arriba) y el brazo largo es el q (abajo). Por eso en 14q32.1 la banda está en el brazo largo (q) del cromosoma 14.' },
           { id:'marca', t:'Marca', d:'Característica morfológica consistente y distintiva del cromosoma.' },
           { id:'region', t:'Región', d:'Área del cromosoma comprendida entre dos marcas adyacentes.' },
           { id:'banda', t:'Banda', d:'Parte del cromosoma que puede distinguirse de los segmentos adyacentes.' },
@@ -383,7 +390,7 @@ const IMG = {
  meiosisI:["t1_s34_0bb827e7.jpeg","Esquema de la meiosis I"],
  profaseI:["t1_s32_529e4134.jpeg","Las 5 subetapas de la profase I"],
  crossing:["t1_s33_58a4cf56.jpeg","Entrecruzamiento (crossing over) entre homólogos"],
- compara:["t1_s38_25d5f91f.png","Comparación entre mitosis y meiosis"],
+ compara:["compara_mitosis_meiosis.png","Comparación de mitosis y meiosis (Fig. 2.8)"],
  esperma:["t1_s41_8f7e1e07.jpeg","Espermatogénesis y ovogénesis"],
  ovo:["t1_s42_4cdce402.jpg","Folículos en el ovario (ovogénesis)"],
  regovo:["t1_s44_bfdda945.png","Arresto de la meiosis del ovocito"],
